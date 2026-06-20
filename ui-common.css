@@ -1,0 +1,38 @@
+/* ============================================================================
+   ui-common.css — 全ツール共通UI（正本: tools-ui-common リポジトリ / submodule）
+   ----------------------------------------------------------------------------
+   各ツールHTMLの <head> に1行:
+     <link rel="stylesheet" href="/01_tools/ui-common/ui-common.css">
+   部品はクラス/データ属性駆動。色はツール側の CSS 変数を参照し、無ければ
+   フォールバック値を使う（テーマ非依存で動く）。
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   [UC-01] pin-scroll: 横はみ出す表の「横スクロールバーを必ず可視範囲に固定」
+   ----------------------------------------------------------------------------
+   対象要素に data-ui-pin-scroll を付けると ui-common.js が監視。
+   - 全列が収まる時: 普通の表（ページが縦スクロール／横バー無し）
+   - 列がはみ出す時: .ui-pinned を付与 → 表内スクロール＋横バーを画面内下端に固定
+                     ＋先頭行(.ui-pin-head 推奨)をヘッダー固定
+   max-height は JS が表の実画面上端から算出して付与する。
+---------------------------------------------------------------------------- */
+[data-ui-pin-scroll]{
+  overflow-x:auto;
+}
+/* 横スクロールバーの見た目（テーマ変数があれば使う・無ければ紫フォールバック） */
+[data-ui-pin-scroll]::-webkit-scrollbar{height:14px;width:14px}
+[data-ui-pin-scroll]::-webkit-scrollbar-track{background:var(--uc-scroll-track, #0b0d12)}
+[data-ui-pin-scroll]::-webkit-scrollbar-thumb{
+  background:var(--purpleD, var(--uc-scroll-thumb, #6d5bd0));
+  border-radius:7px;border:2px solid var(--uc-scroll-track, #0b0d12);
+  box-shadow:0 0 6px var(--purpleD, var(--uc-scroll-thumb, #6d5bd0));
+}
+[data-ui-pin-scroll]::-webkit-scrollbar-thumb:hover{
+  background:var(--purple, var(--uc-scroll-thumb-hover, #8b7bff));
+  box-shadow:0 0 9px var(--purple, var(--uc-scroll-thumb-hover, #8b7bff));
+}
+[data-ui-pin-scroll]::-webkit-scrollbar-corner{background:var(--uc-scroll-track, #0b0d12)}
+
+/* JS が付与: 列がはみ出す時だけ */
+[data-ui-pin-scroll].ui-pinned{overflow:auto}
+[data-ui-pin-scroll].ui-pinned .ui-pin-head{position:sticky;top:0;z-index:6}
