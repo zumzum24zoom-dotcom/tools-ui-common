@@ -32,11 +32,54 @@
     document.querySelectorAll("[data-ui-pin-scroll]").forEach(updateOne);
   }
 
-  // 公開API: 行の追加/削除など内容変化の直後に呼べば即再評価できる。
-  const api = { updatePinScroll: updateAll, updatePinScrollEl: updateOne };
+  /* --------------------------------------------------------------------------
+     [UC-02] resize-grip
+     対象: [data-ui-resize] の要素すべて
+     挙動: 指定角(tl/tr/bl/br・既定tl)にグリップを生成し、ドラッグで width/height を可変に。
+           左/上グリップは外向き(左/上)ドラッグで拡大。最小は data-ui-resize-min="W,H"(既定200,160)、
+           最大は画面の98vw×96vh。要素が position:static なら relative に補正。
+  -------------------------------------------------------------------------- */
+  function attachResize(el) {
+    if (el.__uiResize) return; el.__uiResize = true;
+    const corner = (el.getAttribute("data-ui-resize") || "tl").toLowerCase();
+    const m = (el.getAttribute("data-ui-resize-min") || "200,160").split(",");
+    const minW = parseInt(m[0], 10) || 0, minH = parseInt(m[1], 10) || 0;
+    const signX = corner.indexOf("l") >= 0 ? -1 : 1;   // 左グリップ: 左へドラッグで拡大
+    const signY = corner.indexOf("t") >= 0 ? -1 : 1;   // 上グリップ: 上へドラッグで拡大
+    if (getComputedStyle(el).position === "static") el.style.position = "relative";
+    const grip = document.createElement("div");
+    grip.className = "ui-resize-grip ui-resize-" + (/^(tl|tr|bl|br)$/.test(corner) ? corner : "tl");
+    grip.title = "ドラッグでサイズ変更";
+    let rz = null;
+    grip.addEventListener("pointerdown", e => {
+      e.preventDefault(); rz = { x: e.clientX, y: e.clientY, w: el.offsetWidth, h: el.offsetHeight };
+      try { grip.setPointerCapture(e.pointerId); } catch (x) {}
+    });
+    grip.addEventListener("pointermove", e => {
+      if (!rz) return;
+      const maxW = global.innerWidth * 0.98, maxH = global.innerHeight * 0.96;
+      el.style.width = Math.max(minW, Math.min(maxW, rz.w + signX * (e.clientX - rz.x))) + "px";
+      el.style.height = Math.max(minH, Math.min(maxH, rz.h + signY * (e.clientY - rz.y))) + "px";
+    });
+    const end = e => { rz = null; try { grip.releasePointerCapture(e.pointerId); } catch (x) {} };
+    grip.addEventListener("pointerup", end);
+    grip.addEventListener("pointercancel", end);
+    el.appendChild(grip);
+  }
+
+  function attachAllResize() {
+    document.querySelectorAll("[data-ui-resize]").forEach(attachResize);
+  }
+
+  // 公開API: 行の追加/削除など内容変化の直後／動的生成パネルに呼べば即適用できる。
+  const api = {
+    updatePinScroll: updateAll, updatePinScrollEl: updateOne,
+    attachResize: attachAllResize, attachResizeEl: attachResize
+  };
 
   function init() {
     updateAll();
+    attachAllResize();
     global.addEventListener("resize", updateAll);
   }
 

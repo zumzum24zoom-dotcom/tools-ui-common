@@ -36,3 +36,22 @@
 /* JS が付与: 列がはみ出す時だけ */
 [data-ui-pin-scroll].ui-pinned{overflow:auto}
 [data-ui-pin-scroll].ui-pinned .ui-pin-head{position:sticky;top:0;z-index:6}
+
+/* ----------------------------------------------------------------------------
+   [UC-02] resize-grip: 角ドラッグでパネルをサイズ可変にする
+   ----------------------------------------------------------------------------
+   対象要素に data-ui-resize を付けると ui-common.js が指定角にグリップを生成。
+   - data-ui-resize="tl|tr|bl|br"（既定 tl=左上）… グリップを置く角
+   - data-ui-resize-min="幅,高さ"(px・既定 200,160) で最小サイズ
+   右下固定パネルなら tl グリップで左上方向へ伸びる（自然な操作感）。
+   色は --uc-grip → --teal → 既定 #00d4aa の順でフォールバック（テーマ非依存）。
+---------------------------------------------------------------------------- */
+.ui-resize-grip{position:absolute;width:20px;height:20px;z-index:50;touch-action:none}
+.ui-resize-tl{left:0;top:0;cursor:nwse-resize;border-top-left-radius:inherit;
+  background:linear-gradient(135deg, var(--uc-grip, var(--teal, #00d4aa)) 0 42%, transparent 42%)}
+.ui-resize-tr{right:0;top:0;cursor:nesw-resize;border-top-right-radius:inherit;
+  background:linear-gradient(225deg, var(--uc-grip, var(--teal, #00d4aa)) 0 42%, transparent 42%)}
+.ui-resize-bl{left:0;bottom:0;cursor:nesw-resize;border-bottom-left-radius:inherit;
+  background:linear-gradient(45deg, var(--uc-grip, var(--teal, #00d4aa)) 0 42%, transparent 42%)}
+.ui-resize-br{right:0;bottom:0;cursor:nwse-resize;border-bottom-right-radius:inherit;
+  background:linear-gradient(315deg, var(--uc-grip, var(--teal, #00d4aa)) 0 42%, transparent 42%)}

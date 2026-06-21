@@ -40,7 +40,9 @@ git add 01_tools/ui-common && git commit -m "chore: ui-common 更新取り込み
 | ID | 名前 | 使い方 | 効果 |
 |----|------|--------|------|
 | UC-01 | pin-scroll | スクロールさせたい表に `data-ui-pin-scroll`、固定したい先頭行に `class="ui-pin-head"` | 列が画面幅を超える時だけ表内スクロールに切替え、**横スクロールバーを必ず可視範囲（画面内下端）に固定**＋ヘッダー固定。収まる時は素の表。`data-ui-pin-margin`(既定16)で下余白px調整。内容変化時は `UICommon.updatePinScroll()` を呼ぶと即再評価。 |
+| UC-02 | resize-grip | 可変にしたいパネルに `data-ui-resize`（値=角 `tl`/`tr`/`bl`/`br`・既定 `tl`）。最小は `data-ui-resize-min="幅,高さ"`(px・既定200,160) | 指定角に**ドラッグ用グリップ**を生成しパネルをサイズ可変に。左/上グリップは外向きドラッグで拡大、最大98vw×96vh。右下固定パネルなら `tl` で左上へ伸びる。動的生成パネルには `UICommon.attachResize()`（全体）/`UICommon.attachResizeEl(el)`（個別）。色は `--uc-grip`→`--teal`→`#00d4aa`。 |
 
 ## 由来
 
-UC-01 は propfirm-database の firm-database.html `updatePinned()` を抽出・一般化したもの。
+- UC-01 … propfirm-database の firm-database.html `updatePinned()` を抽出・一般化。
+- UC-02 … PFD Collector 拡張 md-crawl.js プレビューパネルの左上リサイズグリップを抽出・一般化。
