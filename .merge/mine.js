@@ -4,9 +4,20 @@
    各ツールHTMLの末尾に1行:
      <script src="/01_tools/ui-common/ui-common.js"></script>
    data属性駆動・ゼロ設定で自動起動。グローバル汚染は window.UICommon のみ。
+
+   部品一覧（詳細は README.md）:
+     UC-01 pin-scroll  横はみ出す表のスクロールバーを可視範囲に固定
+     UC-02 copy        クリップボードへコピー＋トースト通知
+     UC-03 accordion   セクションの開閉
+     UC-04 pick        候補から選ぶ（単一/複数）
+     UC-05 text-mark   本文をドラッグして印を付ける
+     UC-06 autosave    入力欄の自動保存・復元
    ============================================================================ */
 (function (global) {
   "use strict";
+
+  const doc = global.document;
+  const $$ = (sel, root) => Array.prototype.slice.call((root || doc).querySelectorAll(sel));
 
   /* --------------------------------------------------------------------------
      [UC-01] pin-scroll
@@ -29,50 +40,11 @@
   }
 
   function updateAll() {
-    document.querySelectorAll("[data-ui-pin-scroll]").forEach(updateOne);
+    $$("[data-ui-pin-scroll]").forEach(updateOne);
   }
 
   /* --------------------------------------------------------------------------
-     [UC-02] resize-grip
-     対象: [data-ui-resize] の要素すべて
-     挙動: 指定角(tl/tr/bl/br・既定tl)にグリップを生成し、ドラッグで width/height を可変に。
-           左/上グリップは外向き(左/上)ドラッグで拡大。最小は data-ui-resize-min="W,H"(既定200,160)、
-           最大は画面の98vw×96vh。要素が position:static なら relative に補正。
-  -------------------------------------------------------------------------- */
-  function attachResize(el) {
-    if (el.__uiResize) return; el.__uiResize = true;
-    const corner = (el.getAttribute("data-ui-resize") || "tl").toLowerCase();
-    const m = (el.getAttribute("data-ui-resize-min") || "200,160").split(",");
-    const minW = parseInt(m[0], 10) || 0, minH = parseInt(m[1], 10) || 0;
-    const signX = corner.indexOf("l") >= 0 ? -1 : 1;   // 左グリップ: 左へドラッグで拡大
-    const signY = corner.indexOf("t") >= 0 ? -1 : 1;   // 上グリップ: 上へドラッグで拡大
-    if (getComputedStyle(el).position === "static") el.style.position = "relative";
-    const grip = document.createElement("div");
-    grip.className = "ui-resize-grip ui-resize-" + (/^(tl|tr|bl|br)$/.test(corner) ? corner : "tl");
-    grip.title = "ドラッグでサイズ変更";
-    let rz = null;
-    grip.addEventListener("pointerdown", e => {
-      e.preventDefault(); rz = { x: e.clientX, y: e.clientY, w: el.offsetWidth, h: el.offsetHeight };
-      try { grip.setPointerCapture(e.pointerId); } catch (x) {}
-    });
-    grip.addEventListener("pointermove", e => {
-      if (!rz) return;
-      const maxW = global.innerWidth * 0.98, maxH = global.innerHeight * 0.96;
-      el.style.width = Math.max(minW, Math.min(maxW, rz.w + signX * (e.clientX - rz.x))) + "px";
-      el.style.height = Math.max(minH, Math.min(maxH, rz.h + signY * (e.clientY - rz.y))) + "px";
-    });
-    const end = e => { rz = null; try { grip.releasePointerCapture(e.pointerId); } catch (x) {} };
-    grip.addEventListener("pointerup", end);
-    grip.addEventListener("pointercancel", end);
-    el.appendChild(grip);
-  }
-
-  function attachAllResize() {
-    document.querySelectorAll("[data-ui-resize]").forEach(attachResize);
-  }
-
-  /* --------------------------------------------------------------------------
-     [UC-03] copy — クリップボードへコピー＋トースト
+     [UC-02] copy — クリップボードへコピー＋トースト
      対象: [data-ui-copy]（値はコピー元のCSSセレクタ）
            [data-ui-copy-text]（値をそのままコピー）
      挙動: クリックでコピー。成功/失敗のトーストを自動生成して表示する。
@@ -143,7 +115,7 @@
   }
 
   /* --------------------------------------------------------------------------
-     [UC-04] accordion — セクションの開閉
+     [UC-03] accordion — セクションの開閉
      対象: [data-ui-accordion] を持つ「容器」。中の各節は
            .ui-acc（節）> .ui-acc-head（見出し・クリック対象）+ .ui-acc-body（中身）
      挙動: 見出しクリックで .open をトグル。
@@ -172,7 +144,7 @@
   }
 
   /* --------------------------------------------------------------------------
-     [UC-05] pick — 候補から選ぶ
+     [UC-04] pick — 候補から選ぶ
      対象: [data-ui-pick] を持つ容器（値は "single"（既定）または "multi"）
            中の候補は [data-ui-pick-value]
      挙動: クリックで .ui-picked をトグル（single は排他）。
@@ -204,7 +176,7 @@
   }
 
   /* --------------------------------------------------------------------------
-     [UC-06] text-mark — 本文をドラッグして印を付ける
+     [UC-05] text-mark — 本文をドラッグして印を付ける
      対象: [data-ui-mark] の要素。本文は UICommon.setMarkText(el, text) で入れる
            （HTMLを直接書かない。印の再描画で消えるため）
      挙動: ドラッグ選択 → 浮かぶボタン → クリックで <mark> を付ける。
@@ -347,7 +319,7 @@
   }
 
   /* --------------------------------------------------------------------------
-     [UC-07] autosave — 入力欄の自動保存・復元
+     [UC-06] autosave — 入力欄の自動保存・復元
      対象: [data-ui-autosave] を持つ input / textarea / select
            値は保存キー（省略時は要素の id を使う）
      挙動: input/change で localStorage に保存。起動時に復元。
@@ -395,24 +367,25 @@
     // UC-01
     updatePinScroll: updateAll,
     updatePinScrollEl: updateOne,
-    // UC-02 (resize-grip)
-    attachResize: attachAllResize,
-    attachResizeEl: attachResize,
+    // UC-02
     copyText: copyText,
     toast: toast,
+    // UC-03
     openSection: openSection,
+    // UC-04
     getPicked: getPicked,
+    // UC-05
     setMarkText: setMarkText,
     getMarks: getMarks,
     setMarks: setMarks,
     clearMarks: clearMarks,
+    // UC-06
     restoreAutosave: restoreAutosave,
     clearAutosave: clearAutosave,
   };
 
   function init() {
     updateAll();
-    attachAllResize();                     // UC-02
     global.addEventListener("resize", updateAll);
 
     // 委譲でまとめて拾う（動的に増える要素にも効く）
@@ -434,8 +407,8 @@
     restoreAutosave();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+  if (doc.readyState === "loading") {
+    doc.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
