@@ -32,6 +32,8 @@
   input,textarea{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);
     border-radius:7px;width:100%;margin-bottom:9px}
   .out{font-size:11.5px;color:var(--ink-3);margin-top:6px}
+  .resizable{position:relative;width:320px;height:150px;overflow:auto;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px 14px 26px}
   table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
   th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
   .skin{border:none;background:#fff;padding:6px 11px;font-size:11.5px;font-weight:700;
@@ -57,7 +59,7 @@
 
 <header>
   <i data-lucide="package"></i>
-  <h1>tools-ui-common — 部品デモ（UC-01〜06）</h1>
+  <h1>tools-ui-common — 部品デモ（UC-01〜07）</h1>
   <div style="flex:1"></div>
   <span style="font-size:11px;color:var(--ink-3)">見た目の差替：</span>
   <div id="skinSwitch" style="display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden">
@@ -68,9 +70,9 @@
 </header>
 
 <div class="ui-split" style="--uc-split-right:440px">
-  <!-- 左: UC-05 text-mark -->
+  <!-- 左: UC-06 text-mark -->
   <div class="pad">
-    <div class="lbl">UC-05 text-mark — 下の本文をドラッグして印を付ける</div>
+    <div class="lbl">UC-06 text-mark — 下の本文をドラッグして印を付ける</div>
     <div data-ui-mark id="body"></div>
     <div class="out" id="markOut">印: 0件</div>
     <button class="btn" id="clearMarks" style="margin-top:8px">
@@ -88,16 +90,25 @@
         <tr><td>さ</td><td>し</td><td>す</td><td>せ</td><td>そ</td><td>た</td><td>ち</td><td>つ</td><td>て</td><td>と</td></tr>
       </table>
     </div>
+
+    <div class="lbl" style="margin-top:26px">UC-02 resize-grip — 左上の角をドラッグして大きさを変える</div>
+    <div class="resizable" data-ui-resize="tl" data-ui-resize-min="220,120">
+      <div class="out" style="margin:0">
+        このパネルは <code>data-ui-resize="tl"</code> だけで可変になる。<br>
+        左上のグリップを外向き（左・上）にドラッグすると広がる。<br>
+        最小は <code>data-ui-resize-min="220,120"</code>、最大は 98vw×96vh。
+      </div>
+    </div>
   </div>
 
-  <!-- 右: UC-02/03/04/06 -->
+  <!-- 右: UC-03/04/05/07 -->
   <div class="right">
     <div data-ui-accordion="exclusive">
 
       <div class="ui-acc open" id="sec1">
         <div class="ui-acc-head">
           <i data-lucide="mouse-pointer-click"></i>
-          <span>UC-04 pick — 候補から1つ選ぶ</span>
+          <span>UC-05 pick — 候補から1つ選ぶ</span>
           <i data-lucide="chevron-right" class="ui-acc-chev"></i>
         </div>
         <div class="ui-acc-body">
@@ -113,7 +124,7 @@
       <div class="ui-acc" id="sec2">
         <div class="ui-acc-head">
           <i data-lucide="list-checks"></i>
-          <span>UC-04 pick — 複数選択（multi）</span>
+          <span>UC-05 pick — 複数選択（multi）</span>
           <i data-lucide="chevron-right" class="ui-acc-chev"></i>
         </div>
         <div class="ui-acc-body">
@@ -129,7 +140,7 @@
       <div class="ui-acc" id="sec3">
         <div class="ui-acc-head">
           <i data-lucide="copy"></i>
-          <span>UC-02 copy — コピー＋トースト</span>
+          <span>UC-03 copy — コピー＋トースト</span>
           <i data-lucide="chevron-right" class="ui-acc-chev"></i>
         </div>
         <div class="ui-acc-body">
@@ -145,7 +156,7 @@
       <div class="ui-acc" id="sec4">
         <div class="ui-acc-head">
           <i data-lucide="save"></i>
-          <span>UC-06 autosave — 再読み込みしても残る</span>
+          <span>UC-07 autosave — 再読み込みしても残る</span>
           <i data-lucide="chevron-right" class="ui-acc-chev"></i>
         </div>
         <div class="ui-acc-body">
@@ -158,7 +169,7 @@
       <div class="ui-acc ui-done" id="sec5">
         <div class="ui-acc-head">
           <i data-lucide="check-circle-2"></i>
-          <span>UC-03 状態クラス — .ui-done（完了）</span>
+          <span>UC-04 状態クラス — .ui-done（完了）</span>
           <i data-lucide="chevron-right" class="ui-acc-chev"></i>
         </div>
         <div class="ui-acc-body">
@@ -188,7 +199,7 @@
 <script>
 const $ = id => document.getElementById(id);
 
-// UC-05: 本文は setMarkText で入れる（innerHTML を直接書かない）
+// UC-06: 本文は setMarkText で入れる（innerHTML を直接書かない）
 UICommon.setMarkText($('body'),
 `ここは本文です。ドラッグで範囲を選ぶと、浮かぶボタンが出ます。
 
@@ -211,7 +222,7 @@ $('body').addEventListener('ui:markchange', e => {
 });
 $('clearMarks').addEventListener('click', () => UICommon.clearMarks($('body')));
 
-// UC-04
+// UC-05
 $('pick1').addEventListener('ui:pick', e => {
   $('pickOut').textContent = e.detail.values.length
     ? '選択: ' + e.detail.values.join(', ') : '選択なし';
@@ -221,7 +232,7 @@ $('pick2').addEventListener('ui:pick', e => {
     ? '選択: ' + e.detail.values.join(', ') + '（' + e.detail.values.length + '件）' : '選択なし';
 });
 
-// UC-06
+// UC-07
 $('clearSave').addEventListener('click', () => {
   UICommon.clearAutosave();
   $('memo').value = ''; $('memo2').value = '';
